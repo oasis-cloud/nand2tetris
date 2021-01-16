@@ -43,4 +43,35 @@ CHIP ALU {
 
     PARTS:
    // Put you code here:
+   // if (zx == 1) set x = 0        // 16-bit constant
+   Mux16(a=x, b=false, sel=zx, out=tpx);
+   
+   // if (nx == 1) set x = !x       // bitwise not
+   Not16(in=tpx, out=notX);
+   Mux16(a=tpx, b=notX, sel=nx, out=tpnx);
+   
+   // if (zy == 1) set y = 0        // 16-bit constant
+   Mux16(a=y, b=false, sel=zy, out=tpy);
+   
+   // if (ny == 1) set y = !y       // bitwise not
+   Not16(in=tpy, out=notY);
+   Mux16(a=tpy, b=notY, sel=ny, out=tpny);
+   
+   // if (f == 1)  set out = x + y  // integer 2's complement addition
+   // if (f == 0)  set out = x & y  // bitwise and
+   And16(a=tpnx, b=tpny, out=xAndy);
+   Add16(a=tpnx, b=tpny, out=xPlusy);
+   Mux16(a=xAndy, b=xPlusy, sel=f, out=tpOut);
+   
+   // no
+   Not16(in=tpOut, out=out1);
+   Mux16(a=tpOut, b=out1, sel=no, out=out, out[0..7] = p1, out[8..15] = p2, out[15]=ng);
+   
+   // zr, 考虑 8 通道或的输出特点，其特点为 1 位输出
+   // Or16Way(in=out2, out=zr1);
+   Or8Way(in=p1, out=o8w1);
+   Or8Way(in=p2, out=o8w2);
+   Or(a=o8w1, b=o8w2, out=zr1);
+   Not(in=zr1, out=zr);
+
 }
