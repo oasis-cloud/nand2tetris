@@ -7,3 +7,33 @@
 // (R0, R1, R2 refer to RAM[0], RAM[1], and RAM[2], respectively.)
 
 // Put your code here.
+
+// R2=0
+// while(R1-1 > 0) {
+//     R2=R2+R0
+// }
+
+@SUM
+M=0
+@R2
+M=0
+
+(LOOP)
+@R1
+D=M-1
+M=D
+@END
+D;JLT
+
+@R0
+D=M
+@SUM
+M=D+M
+D=M
+@R2
+M=D
+@LOOP
+0;JMP
+(END)
+@END
+0;JMP
