@@ -12,3 +12,48 @@
 // the screen should remain fully clear as long as no key is pressed.
 
 // Put your code here.
+(RESETM)
+@SUM
+M=0
+(LOOP)
+// 获取按键
+@24576
+D=M
+// 未按键
+@ELSE
+D;JEQ
+
+(IFTHEN)
+@SCREEN
+D=A
+@SUM
+D=D+M
+M=M+1
+A=D
+M=-1
+@8191
+D=A
+@SUM
+
+D=M-D
+@RESETM
+D;JEQ
+@LOOP
+0;JMP
+
+// 未按键的清除逻辑
+(ELSE)
+@SCREEN
+D=A
+@SUM
+D=D+M
+M=M-1
+A=D
+M=0
+@SUM
+D=M
+@RESETM
+D;JEQ
+
+@LOOP
+0;JMP
