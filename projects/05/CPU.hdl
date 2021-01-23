@@ -40,4 +40,5 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+    Mux16(a=pc, b=false, sel=reset, out=pc);
 }

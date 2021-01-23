@@ -28,4 +28,19 @@ CHIP Memory {
 
     PARTS:
     // Put your code here:
+    // 24576=0110 0000 0000 0000  组合情况 11
+    // 16384=0100 0000 0000 0000  组合情况 10
+    // 16383=0011 1111 1111 1111  组合情况 01
+    //  5000=0001 0011 1000 1000  组合情况 00
+    // 通过观察边界值发现可以采用 4 选一的选择器
+
+    DMux4Way(in=load, sel=address[13..14], a=isLoadRamA, b=isLoadRamB, c=isLoadScreen, d=isLoadKeyboard);
+    
+    Or(a=isLoadRamA, b=isLoadRamB, out=isLoadRam);
+
+    RAM16K(in=in, load=isLoadRam, address=address[0..13], out=ramOutput);
+    Screen(in=in, load=isLoadScreen, address=address[0..12], out=screenOutput);
+    Keyboard(out=keyboardOutput);
+
+    Mux4Way16(a=ramOutput, b=ramOutput, c=screenOutput, d=keyboardOutput, sel=address[13..14], out=out);
 }
