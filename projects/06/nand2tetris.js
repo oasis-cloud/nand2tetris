@@ -34,7 +34,7 @@ class Lexer {
       this.back();
     }
   }
-  acommand() {
+  aCommand() {
     let command = "";
     do {
       command += this.lookAhead;
@@ -45,7 +45,7 @@ class Lexer {
       value: command,
     });
   }
-  ccommand() {
+  cCommand() {
     let command = "";
     do {
       command += this.lookAhead;
@@ -68,7 +68,6 @@ class Lexer {
     });
   }
   nextToken() {
-    // if (this.hasNextToken()) {
     while (this.hasNextToken()) {
       if (Utils.isWhiteSpace(this.lookAhead)) {
         this.consume();
@@ -78,16 +77,15 @@ class Lexer {
         this.consume();
         this.comment();
       } else if (this.lookAhead == "@") {
-        this.acommand();
+        this.aCommand();
       } else if (this.lookAhead == "(") {
         this.symbol();
       } else if (/[A|M|D]/.test(this.lookAhead)) {
-        this.ccommand();
+        this.cCommand();
       } else {
         this.consume();
       }
     }
-    // }
     return null;
   }
 }
@@ -106,7 +104,7 @@ class Parser {
     // L_COMMAND
     return "";
   }
-  getsymbol() {
+  getSymbol() {
     if (
       this.commandType() == "A_COMMAND" ||
       this.commandType() == "C_COMMAND"
