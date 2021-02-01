@@ -40,4 +40,97 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+
+    // 区分 A 指令和 C 指令
+
+    /*
+    * if(!instruction[15]) {A}
+    * else {C}
+    */
+    Not(in=instruction[15], out=isAInstruction);
+    Not(in=isAInstruction, out=isCInstruction);
+
+    /*
+    * if(A Instruction || (isCInstruction && instruction[5])) { writeA }
+    */
+
+    And(a=isCInstruction, b=instruction[5], out=CInstrctuonWriteToA);
+    Mux16(a=instruction, b=ALUOutput, sel=CInstrctuonWriteToA, out=toA);
+    Or(a=CInstrctuonWriteToA, b=isAInstruction, out=AInitOrCInstructionwriteA);
+    ARegister(in=toA, load=AInitOrCInstructionwriteA, out=A);
+
+    /*
+    * D 寄存器 写入逻辑
+    */
+    And(a=isCInstruction, b=instruction[4], out=CInstrctuonWriteToD);
+    DRegister(in=ALUOutput, load=CInstrctuonWriteToD, out=D);
+
+    /*
+    * 写入 M
+    */
+    And(a=isCInstruction, b=instruction[3], out=writeM);
+    Or16(a=false, b=A, out[0..14]=addressM);
+
+    /*
+    * 解析 C 指令
+    * ALU 计算 A 或 M 寄存器
+    */
+    Mux16(a=A, b=inM, sel=instruction[12], out=outAM);
+
+    /*
+    * ALU 计算和输出
+    */
+    ALU(x=D, y=outAM,
+        zx=instruction[11],
+        nx=instruction[10],
+        zy=instruction[9],
+        ny=instruction[8],
+        f=instruction[7],
+        no=instruction[6],
+        out=ALUOutput,
+        out=outM,
+        zr=zrOut,
+        ng=ngOut
+    );
+
+    /*
+    * PC 程序计数器
+    * 这里需要处理何时写 PC 寄存器，j1,j2,j3
+    * 当 j1,j2,j3 不是 000 则 load 设置为 1
+    */
+
+    // jeq ==
+    And(a=instruction[1], b=zrOut, out=jeq);
+
+    // jgt >
+    Not(in=ngOut, out=nngOut);
+    Not(in=zrOut, out=nzrOut);
+    And(a=nngOut, b=nzrOut, out=greate);
+    And(a=instruction[0], b=greate, out=jgt);
+
+    // jlt <
+    And(a=ngOut, b=nzrOut, out=less);
+    And(a=instruction[2], b=less, out=jlt);
+
+    // >=
+    Or(a=jgt, b=jeq, out=jge);
+    
+    // <=
+    Or(a=jgt, b=jeq, out=jle);
+    
+    // !=  >或<
+    Or(a=jgt, b=jlt, out=jne);
+
+    // jmp
+    And(a=instruction[0], b=instruction[1], out=temp);
+    And(a=instruction[2], b=temp, out=jmp);
+
+    Or(a=jge, b=jle, out=jgejle);
+    Or(a=jne, b=jmp, out=jnejmp);
+    Or(a=jgejle, b=jnejmp, out=jmpa);
+    And(a=jmpa, b=isCInstruction, out=loadPC);
+    
+    Not(in=loadPC, out=inc);
+
+    PC(in=A, load=loadPC, inc=inc, reset=reset, out[0..14]=pc);
 }
